@@ -1,65 +1,144 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+// import Image from "next/image";
+// import { Roboto } from "next/font/google";
+
+type Post = {
+  id: number;
+  title: string;
+  content?: string;
+  published: boolean;
+};
+
+// const roboto = Roboto({ subsets: ["latin"] });
 
 export default function Home() {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch("/api/posts");
+        const data = await res.json();
+        setPosts(data);
+      } catch (err) {
+        console.error("Failed to fetch posts:", err);
+      }
+  };
+
+    fetchData();
+  }, []);
+
+  const fetchPosts = async () => {
+    const res = await fetch("/api/posts");
+    const data = await res.json();
+    setPosts(data);
+    console.log("posts----->",posts)
+  };
+
+  const handleSubmit = async () => {
+      console.log("editingId - above",editingId)
+
+    if (editingId) {
+
+      console.log("editingId - below",editingId)
+      await fetch(`/api/posts/${editingId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, content, published: true })
+      });
+
+      setPosts((prevPosts) =>
+        prevPosts.map((post) => 
+          post.id === editingId ? { ...post, title, content } : post
+        )
+      );
+      
+      setEditingId(null);
+    } else {
+      await fetch("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, content })
+      });
+    }
+    setTitle(""); setContent("");
+  };
+
+  const handleEdit = (post: Post) => {
+    setTitle(post.title);
+    setContent(post.content || "");
+    setEditingId(post.id);
+  };
+
+  const handleDelete = async (id: number) => {
+    await fetch(`/api/posts/${id}`, { method: "DELETE" });
+    fetchPosts();
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="max-w-2xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-4">Posts CRUD App</h1>
+      {/* <div className={roboto.className}>
+        <h1>Hello Next.js</h1>
+        <p>This text uses optimized Roboto font</p>
+      </div> */}
+      {/* <Image
+        src="https://camo.githubusercontent.com/5e45bc648dba68520ce949a53690af6bcef2880f84a1d46cbb1636649afd6d84/68747470733a2f2f796176757a63656c696b65722e6769746875622e696f2f73616d706c652d696d616765732f696d6167652d313032312e6a7067"
+        alt="Photo"
+        width={200}
+        height={200}
+      /> */}
+
+      {/* Form */}
+      <div className="mb-6 p-4 border rounded shadow">
+        <input
+          type="text" placeholder="Title" value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="border p-2 w-full mb-2 rounded"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+        <textarea
+          placeholder="Content" value={content}
+          onChange={(e) => setContent(e.target.value)}
+          className="border p-2 w-full mb-2 rounded"
+        />
+        <button
+          onClick={handleSubmit}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          {editingId ? "Update Post" : "Add Post"}
+        </button>
+      </div>
+
+      {/* Posts List */}
+      <ul>
+        {posts.map((post) => (
+          <li key={post.id} className="border p-4 mb-2 rounded shadow flex justify-between items-center">
+            <div>
+              <h2 className="font-bold">{post.title}</h2>
+              <p>{post.content}</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleEdit(post)}
+                className="bg-blue-400 px-2 py-1 rounded hover:bg-blue-500"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleDelete(post.id)}
+                className="bg-red-500 px-2 py-1 rounded hover:bg-orange-600 text-white"
+              >
+                Delete
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
