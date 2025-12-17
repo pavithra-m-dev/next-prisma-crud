@@ -1,66 +1,75 @@
-// import Link from "next/link";
-// import { useEffect, useState } from "react";
+"use client";
 
-// export default function Home() {
-//   const [posts, setPosts] = useState([]);
+import { useEffect, useState } from "react";
 
-//   async function load() {
-//     const res = await fetch("/api/posts");
-//     setPosts(await res.json());
-//   }
+type Post = {
+  id: number;
+  title: string;
+  content?: string;
+  published?: boolean;
+};
 
-//   useEffect(() => { load(); }, []);
+export default function Home() {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
 
-//   return (
-//     <div className="min-h-screen bg-gray-100 p-8">
-//       <div className="max-w-4xl mx-auto">
-//         <header className="flex justify-between mb-6">
-//           <h1 className="text-3xl font-bold">📘 Posts</h1>
-//           <Link href="/create">
-//             <a className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700">
-//               + Create
-//             </a>
-//           </Link>
-//         </header>
+  const fetchPosts = async () => {
+    try {
+      const res = await fetch("/api/posts");
 
-//         <div className="grid gap-4">
-//           {posts.map((post) => (
-//             <div key={post.id} className="p-6 bg-white shadow rounded-lg hover:shadow-md transition">
-//               <div className="flex justify-between">
-//                 <div>
-//                   <h2 className="text-xl font-semibold">{post.title}</h2>
-//                   <p className="text-gray-600 mt-1">{post.content?.slice(0, 120) || "No content"}</p>
-//                 </div>
-//                 <div className="text-right">
-//                   <p className={`text-sm ${post.published ? "text-green-600" : "text-yellow-600"}`}>
-//                     {post.published ? "Published" : "Draft"}
-//                   </p>
+      if (!res.ok) {
+        throw new Error("Failed to fetch posts");
+      }
 
-//                   <div className="mt-2 space-x-3">
-//                     <Link href={`/edit/${post.id}`}>
-//                       <a className="text-blue-600 hover:text-blue-800">Edit</a>
-//                     </Link>
+      const data = await res.json();
+      setPosts(data);
+    } catch (err) {
+      console.error("Failed to fetch posts:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-//                     <button
-//                       onClick={async () => {
-//                         await fetch(`/api/posts/${post.id}`, { method: "DELETE" });
-//                         load();
-//                       }}
-//                       className="text-red-600 hover:text-red-800"
-//                     >
-//                       Delete
-//                     </button>
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           ))}
+  useEffect(() => {
+    fetchPosts();
+  }, []);
 
-//           {posts.length === 0 && (
-//             <p className="text-gray-500 text-center py-10">No posts created yet</p>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
+  return (
+    <div className="min-h-screen bg-gray-100 p-8">
+      <div className="max-w-4xl mx-auto">
+        <header className="flex justify-between mb-6">
+          <h1 className="text-gray-600 text-3xl font-bold">Posts</h1>
+        </header>
+
+        {loading && (
+          <p className="text-gray-500 text-center py-10">Loading posts...</p>
+        )}
+
+        {!loading && (
+          <div className="grid gap-4">
+            {posts.map((post) => (
+              <div
+                key={post.id}
+                className="p-6 bg-white shadow rounded-lg hover:shadow-md transition"
+              >
+                <h2 className="text-gray-600 text-xl font-semibold">
+                  {post.title}
+                </h2>
+
+                <p className="text-gray-600 mt-1">
+                  {post.content?.slice(0, 120) || "No content"}
+                </p>
+              </div>
+            ))}
+
+            {posts.length === 0 && (
+              <p className="text-gray-500 text-center py-10">
+                No posts created yet
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
