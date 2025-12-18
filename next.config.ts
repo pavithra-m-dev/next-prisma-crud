@@ -1,9 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    turbo: false
-  }
+ // keep empty or add other configs later
 };
 
 export default nextConfig;
