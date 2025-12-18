@@ -37,8 +37,15 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-4xl mx-auto">
-        <header className="flex justify-between mb-6">
+        <header className="flex items-center justify-between mb-4">
           <h1 className="text-gray-600 text-3xl font-bold">Posts</h1>
+
+          <button
+            onClick={() => history.back()}
+            className="text-sm px-3 py-1 border border-gray-300 rounded text-gray-600 hover:bg-gray-100 transition"
+          >
+            ← Back
+          </button>
         </header>
 
         {loading && (

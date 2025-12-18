@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
 
 type Post = {
@@ -82,7 +83,7 @@ export default function Home() {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-4">Posts CRUD App</h1>
+      <h1 className="text-3xl font-bold mb-4">CRUD - Next.js</h1>
 
       <div className="mb-6 p-4 border rounded shadow">
         <input
@@ -137,6 +138,14 @@ export default function Home() {
           </li>
         ))}
       </ul>
+      <div className="mt-6 flex justify-end">
+        <Link
+          href="/create"
+          className="text-sm text-blue-600 font-medium hover:underline transition"
+        >
+          View All Posts
+        </Link>
+      </div>
     </div>
   );
 }
