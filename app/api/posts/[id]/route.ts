@@ -1,12 +1,18 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+type Context = {
+  params: Promise<{ id: string }>;
+};
+
+export async function PATCH( request: Request, { params }: Context) {
   try {
+
+    const { id } = await params;
     const data = await request.json();
 
     const postUpdatedData = await prisma.post.update({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       data,
     });
 
@@ -16,10 +22,11 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE( request: Request,{ params }: Context) {
   try {
+    const { id } = await params;
     const deletePost = await prisma.post.delete({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
     });
 
     return NextResponse.json(deletePost);
